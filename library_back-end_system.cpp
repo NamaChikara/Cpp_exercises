@@ -12,15 +12,15 @@ class Book {
 	string title;
 	string author;
 	string isbn;
-	bool available = false;		// availability for check out
+	bool available;		// availability for check out
 public:
 	Book(string title, string author, string isbn, bool available);
 	class Invalid {};			// to throw as an exception
-	void check(string status);	// check if a book is available
 	void print();				// print book info
+	string get_title() { return title; }
+	bool get_available() { return available; }
+	void set_available(bool io) { available = io; }
 };
-
-vector<Book> library;
 
 // proper ISBN input is of the form  n-n-n-x  where n is an integer and x is an int or a letter
 //	ISBNs will be stored as  nnnx.
@@ -36,33 +36,67 @@ bool is_isbn(string &isbn) {
 	return true;
 }
 
-void Book::print() {
-	cout << title << " by " << author << endl
-		<< "ISBN = " << isbn << endl;
-}
-
-// check to see if a book can be checked in or checked out, based on value of status
-void Book::check(string status) {
-	if (status == "in") {
-		if (available == false)
-			available = true;
-		else
-			cerr << "Book is already checked in." << endl;
-	}
-	if (status == "out") {
-		if (available == true)
-			available = false;
-		else
-			cerr << "Book is not available." << endl;
-	}
-	if (status != "in" && status != "out")
-		cerr << "That is not a valid action." << endl;
-}
-
 Book::Book(string ctitle, string cauthor, string cisbn, bool cavailable)
 	: title{ ctitle }, author{ cauthor }, isbn{ cisbn }, available{ cavailable }
 {
 	if (!is_isbn(cisbn)) throw Invalid{};
+}
+
+
+void Book::print() {
+	cout << title << " by " << author << endl
+		<< "ISBN = " << isbn << endl;
+	if (available)
+		cout << "Is available." << endl << endl;
+	else
+		cout << "Is not available." << endl << endl;
+}
+
+// /////////////////////////
+
+class Library {
+public:
+	vector<Book> contents = {};
+	int is_book(string title);
+};
+
+Library pub_lib;
+
+int Library::is_book(string title) {
+	if (contents.size() <= 0) { return -1; }
+	for (int i = 0; i < contents.size(); ++i) {
+		if (title == contents[i].get_title())
+			return i;
+		else
+			return -1;
+	}
+}
+
+
+// check to see if a book can be checked in or checked out, based on value of status
+void check_io(string title, string io) {
+	int storage_number = pub_lib.is_book(title);
+	if (storage_number > -1) {
+		Book &query = pub_lib.contents[storage_number];	// create a reference so that we can modify
+		if (io == "in") {
+			if (query.get_available() == false) {
+				query.set_available(true);
+				cout << title << " is now checked in." << endl;
+			}
+			else
+				cerr << "Book is already checked in." << endl;
+		}
+		if (io == "out") {
+			if (query.get_available() == true) {
+				query.set_available(false);
+				cout << title << " is now checked out." << endl;
+			}
+			else
+				cerr << "Book is not available." << endl;
+		}
+		if (io != "in" && io != "out")
+			cerr << "That is not a valid action." << endl;
+	}
 }
 
 int main()
@@ -80,14 +114,18 @@ try {
 			else {
 				cin >> author >> isbn;
 				Book new_book = Book(title, author, isbn, true);
-				library.push_back(new_book);
+				pub_lib.contents.push_back(new_book);
 			}
 		}
-		for (size_t i = 0; i < library.size(); ++i) {
-			library[i].print();
-		}
+		cout << "Enter a title you would like to check out." << endl;
+		string io;
+		cin >> title >> io;
+		check_io(title, io);
+		for (int i = 0; i < pub_lib.contents.size(); ++i)
+			pub_lib.contents[i].print();
 	}
 }
 catch (Book::Invalid) {
 	cerr << "Error: Invalid ISBN." << endl;
 }
+
