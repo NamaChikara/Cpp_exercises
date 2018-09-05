@@ -7,6 +7,8 @@
 
 using namespace std;
 
+// ///////////////////////////
+
 // store all pertinent information about a given book
 class Book {
 	string title;
@@ -16,9 +18,15 @@ class Book {
 public:
 	Book(string title, string author, string isbn, bool available);
 	class Invalid {};			// to throw as an exception
-	void print();				// print book info
-	string get_title() { return title; }
-	bool get_available() { return available; }
+	// Note: without identifying the functions as const members, we cannot pass const Book to 
+	//	functions which call get_X().
+	string get_title() const { return title; }
+	void set_title(string t) { title = t; }
+	string get_author() const { return author; }
+	void set_author(string a) { author = a; }
+	string get_isbn() const { return isbn; }
+	void set_isbn(string i) { isbn = i; }
+	bool get_available() const { return available; }
 	void set_available(bool io) { available = io; }
 };
 
@@ -36,42 +44,64 @@ bool is_isbn(string &isbn) {
 	return true;
 }
 
+// construct book if the ISBN is valid
 Book::Book(string ctitle, string cauthor, string cisbn, bool cavailable)
 	: title{ ctitle }, author{ cauthor }, isbn{ cisbn }, available{ cavailable }
 {
 	if (!is_isbn(cisbn)) throw Invalid{};
 }
 
-
-void Book::print() {
-	cout << title << " by " << author << endl
-		<< "ISBN = " << isbn << endl;
-	if (available)
-		cout << "Is available." << endl << endl;
-	else
-		cout << "Is not available." << endl << endl;
+// overload << operator so that it is easy to print a book's information
+ostream& operator<<(ostream& os, const Book& b)
+{
+	string status;
+	if (!b.get_available()) status = "not ";
+	return os << b.get_title() << " by " << b.get_author() << endl
+		<< "ISBN = " << b.get_isbn() << endl
+		<< "is " << status << "available." << endl;
 }
 
-// /////////////////////////
+// Books are the same if their ISBN is the same
+bool operator==(const Book& a, const Book& b) {
+	return a.get_isbn() == b.get_isbn();
+}
+
+bool operator!=(const Book& a, const Book& b) {
+	return !(a == b);
+}
+
+// ///////////////////////////
+
+// create class in which to store books and query the library stock
 
 class Library {
 public:
-	vector<Book> contents = {};
-	int is_book(string title);
+	vector<Book> contents = {};		// to store the books
+	int is_book(string title);		// if a title is in contents, returns the index; otherwise returns -1
+	bool add_book(Book& b);			// true if b's isbn is not already used by another book in contents
 };
-
-Library pub_lib;
 
 int Library::is_book(string title) {
 	if (contents.size() <= 0) { return -1; }
 	for (int i = 0; i < contents.size(); ++i) {
 		if (title == contents[i].get_title())
 			return i;
-		else
-			return -1;
 	}
+	return -1;
 }
 
+bool Library::add_book(Book& b) {
+	if (is_book(b.get_title()) == -1) {
+		contents.push_back(b);
+		return true;
+	}
+	else
+		return false;
+}
+
+Library pub_lib;
+
+// ///////////////////////////
 
 // check to see if a book can be checked in or checked out, based on value of status
 void check_io(string title, string io) {
@@ -99,6 +129,8 @@ void check_io(string title, string io) {
 	}
 }
 
+// ///////////////////////////
+
 int main()
 try {
 	while (true) {
@@ -114,7 +146,7 @@ try {
 			else {
 				cin >> author >> isbn;
 				Book new_book = Book(title, author, isbn, true);
-				pub_lib.contents.push_back(new_book);
+				if (!pub_lib.add_book(new_book)) cout << "A book with that ISBN already exists." << endl;
 			}
 		}
 		cout << "Enter a title you would like to check out." << endl;
@@ -122,7 +154,7 @@ try {
 		cin >> title >> io;
 		check_io(title, io);
 		for (int i = 0; i < pub_lib.contents.size(); ++i)
-			pub_lib.contents[i].print();
+			cout << pub_lib.contents[i];
 	}
 }
 catch (Book::Invalid) {
