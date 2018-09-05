@@ -3,11 +3,6 @@
 #ifndef LibraryTools_H
 #define LibraryTools_H
 
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-
 namespace LibraryTools {
 
 	// store all pertinent information about a given book
@@ -49,15 +44,15 @@ namespace LibraryTools {
 
 	class Library {
 	public:
-		std::vector<Book> contents = {};		// to store the books
+		std::vector<Book> contents = {};	// to store the books
 		int is_book(std::string title);		// if a title is in contents, returns the index; otherwise returns -1
-		bool add_book(Book& b);			// true if b's isbn is not already used by another book in contents
+		bool add_book(Book& b);				// true if b's isbn is not already used by another book in contents
+		void check_io();					// check to see if a book can be checked in or checked out, based on value of status
+		void process_donation();
 	};
 
 	// ///////////////////////////
 
-	// check to see if a book can be checked in or checked out, based on value of status
-	void check_io(Library lib_name, std::string title, std::string io);
 }
 
 #endif
