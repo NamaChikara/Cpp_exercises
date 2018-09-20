@@ -21,42 +21,26 @@
 using Graph_lib::Point;
 using std::pow;
 
-void print_point(Point p) {
-	std::cout << p.x << ", " << p.y << std::endl;
-}
-
 // start is the location of the root node, rows is the depth of the tree,
 //  h_space is the spacing between nodes in the final row, v_space is spacing between rows
 class Binary_tree : public Shape {
 public:
-	Binary_tree(Point start, int rows, int h_space, int v_space);
-	Binary_tree(Point start, int rows, int h_space, int v_space, int radius);
+	Binary_tree(Point start, int rows, int h_space, int v_space, int radius = 5);
 protected:
 	Point start;				// location of first node
 	int rows;					// layers of the tree
 	int h_space;				// distance between nodes within the last row
 	int v_space;				// distance between rows of nodes
-	int radius = 5;				// for the node circles
+	int radius;					// for the node circles
 	void generate_centers();	// store the center of the nodes in centers
 	void draw_lines() const;	// override Shape's virtual function	
 	virtual void draw_nodes() const;
 	void draw_connections() const;
 	vector<vector<Point>> centers;		// store the center of the nodes
 };
-// in case the user provides a radius for the node:
+// make sure the binary tree has at least one row before drawing
 Binary_tree::Binary_tree(Point start, int rows, int h_space, int v_space, int radius)
 	: start{ start }, rows{ rows }, h_space{ h_space }, v_space{ v_space }, radius{ radius }
-{
-	if (rows > 0) {
-		generate_centers();
-		draw_lines();
-	}
-	else
-		std::cout << "Empty binary tree." << std::endl;
-}
-// in case the user doesn't provide a radius for the node:
-Binary_tree::Binary_tree(Point start, int rows, int h_space, int v_space)
-	: start{ start }, rows{ rows }, h_space{ h_space }, v_space{ v_space }
 {
 	if (rows > 0) {
 		generate_centers();
@@ -113,25 +97,17 @@ void Binary_tree::draw_connections() const {
 // uses rectangles for nodes instead of circles
 class Nodeselektor : public Binary_tree {
 public:
-	Nodeselektor(Point start, int rows, int h_space, int v_space, int ww, int hh);
-	Nodeselektor(Point start, int rows, int h_space, int v_space);
+	Nodeselektor(Point start, int rows, int h_space, int v_space, int ww = 10, int hh = 10);
 	void draw_nodes() const;
-	int width = 10;
-	int height = 10;
+	int width;
+	int height;
 };
-// if width(ww) and height(hh) are provided by the user:
 Nodeselektor::Nodeselektor(Point start, int rows, int h_space, int v_space, int ww, int hh)
 	: Binary_tree(start, rows, h_space, v_space), width{ ww }, height{ hh }
 {
-	draw_lines();
+	draw_lines(); // a Binary_tree function that calls Nodeselektor::draw_nodes() (it replaces Binary_tree's
+				  //  virtual function of the same name), and Binary_tree::draw_connections().
 }
-// if width and height aren't provided by the user:
-Nodeselektor::Nodeselektor(Point start, int rows, int h_space, int v_space)
-	: Binary_tree(start, rows, h_space, v_space)
-{
-	draw_lines();
-}
-
 // nodes are boxes instead of circles (as in Binary_tree)
 void Nodeselektor::draw_nodes() const {
 	for (int i = 0; i < centers.size(); ++i) {
@@ -145,7 +121,7 @@ void Nodeselektor::draw_nodes() const {
 
 int main() {
 	Simple_window win{ {0,0},1600,800,"Binary Tree" };
-	Binary_tree bin_tree{ {800,10},5,40,70 };
+	Binary_tree bin_tree{ {800,10},5,40,70, 20 };
 	bin_tree.set_color(Color::black);
 	win.attach(bin_tree);
 	win.wait_for_button();
