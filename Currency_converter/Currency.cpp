@@ -9,6 +9,7 @@ Conversion::Conversion(std::string s, double d)
 Conversion::Conversion()
 	: country{ "" }, usd_ratio{ 0 } {}
 
+// used to verify read_rates is working correctly
 void print_conversion(const std::vector<Conversion>& rates) {
 	for (Conversion c : rates)
 		std::cout << c.country << '\t' << c.usd_ratio << std::endl;
