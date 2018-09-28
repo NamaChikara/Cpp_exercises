@@ -1,3 +1,7 @@
+// Exercises from Bjarne Stroustrup's C++ textbook.
+// The purpose is to learn about C-style strings while improving
+//	pointer arithmetic skills.  
+
 #include<iostream>
 
 using namespace std;
