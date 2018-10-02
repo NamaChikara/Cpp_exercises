@@ -1,5 +1,5 @@
-#include "C:/Users/zackb_000/Documents/Visual Studio 2017/Projects/ProgrammingPrincPracC/sec3_chpt18/sec3_chpt18_exercise12/sec3_chpt18_exercise12/WumpusCave.h"
-#include "C:/Users/zackb_000/Documents/Visual Studio 2017/Projects/ProgrammingPrincPracC/sec3_chpt18/sec3_chpt18_exercise12/sec3_chpt18_exercise12/Probability.h"
+#include "WumpusCave.h"
+#include "Probability.h"
 
 Room::Room()
 	: pit(false), bat(false), wumpus(false), loc(-1) {}
@@ -32,6 +32,7 @@ std::vector<Room> initialize_cave(int rooms) {
 
 	// determine which rooms are linked
 	std::vector<double> link_prob;
+	bool repeat = false;	// keep track of if a link already exists
 	for (int i = 0; i < rooms; ++i) {
 		// first, see if linked to 1, 2, or 3 rooms by using a uniform distribution
 		double d = get_random();
@@ -44,13 +45,21 @@ std::vector<Room> initialize_cave(int rooms) {
 		// next, randomly determine which rooms to link to using 
 		//	get_bucket from Probability.h
 		for (size_t j = 0; j < link_prob.size(); ++j) {
-			int n = get_bucket(rooms, link_prob[j]);	// n is between 0 and rooms - 1, add 1 to it
-			if (n + 1 == i) {	// a room can't link to itself
-				link_prob[j] = get_random();	// reset the link_prob value and try again
+			int n = get_bucket(rooms, link_prob[j]);
+			// check that the link isn't redundant
+			if (n == i) 									// a room can't link to itself
+				repeat = true;
+			for (int k = 0; k < cave[i].links.size(); ++k) {
+				if (n == cave[i].links[k])
+					repeat = true;
+			}
+			if (repeat == true) {
+				link_prob[j] = get_random();				// reset the link_prob value and try again
 				--j;
+				repeat = false;
 			}
 			else
-				cave[i].links.push_back(n + 1);
+				cave[i].links.push_back(n);
 		}
 	}
 	return cave;
@@ -88,4 +97,55 @@ void print_stats(std::vector<Room> vr) {
 		<< bat_count << " bats. \n The wumpus is in Room "
 		<< wumpus_location << ". \n The average number of links is "
 		<< avg_linkage << ".\n";
+}
+
+void Room::print_info() {
+	std::ostringstream os;
+	for (int i = 0; i < links.size(); ++i) {
+		if (i == links.size() - 1)
+			os << links[i];
+		else
+			os << links[i] << ", ";
+	}
+	std::string tunnels = os.str();
+	std::cout << "You are in room " << loc;
+	if (links.size() == 1)
+		std::cout << "; there is a tunnel to room ";
+	else
+		std::cout << "; there are tunnels to rooms ";
+	std::cout << tunnels << "; move or shoot?" << std::endl;
+}
+
+
+bool take_shot(std::vector<Room> cave, std::vector<int> path) {
+	for (int i = 0; i < path.size(); ++i) {
+		if (cave[path[i]].wumpus == true) {
+			std::cout << "You hit the Wumpus in Room " << path[i] << "." << std::endl;
+			return true;
+		}
+	}
+	std::cout << "You did not hit the Wumpus." << std::endl;
+	return false;
+}
+
+
+void give_warning(Room location, std::vector<Room> cave) {
+	bool is_pit = false;
+	bool is_bat = false;
+	bool is_wumpus = false;
+	for (int i = 0; i < location.links.size(); ++i) {
+		if (cave[location.links[i]].pit)
+			is_pit = true;
+		if (cave[location.links[i]].bat)
+			is_bat = true;
+		if (cave[location.links[i]].wumpus)
+			is_wumpus = true;
+	}
+	if (is_pit)
+		std::cout << "I feel a breeze." << std::endl;
+	if (is_bat)
+		std::cout << "I hear a flapping." << std::endl;
+	if (is_wumpus)
+		std::cout << "I smell a Wumpus." << std::endl;
+	return;
 }

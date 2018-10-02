@@ -14,9 +14,23 @@
 #include <random>
 #include <limits>
 #include "WumpusCave.h"
+#include "WumpusPlayer.h"
 
 int main() {
-	std::vector<Room> cave = initialize_cave(100);
+	std::vector<Room> cave = initialize_cave(5);
 	print_stats(cave);
-	std::cin.get();
+	bool wumpus = true;
+	Player user{ "Zack" };
+
+	while (wumpus) {
+		cave[user.location].print_info();
+		user.get_move(cave[user.location].links);
+		if (user.shot_path.size() != 0) {
+			if (take_shot(cave, user.shot_path))
+				wumpus = false;
+			user.shot_path.clear();
+		}
+		else
+			give_warning(cave[user.location], cave);
+	}
 }
