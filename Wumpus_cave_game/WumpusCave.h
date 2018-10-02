@@ -25,22 +25,24 @@ public:
 // The argument specifies how many rooms to generate.  Only
 //  one room will have the wumpus; pit and bat status is determined
 //	via probability distributions in Probability.h
-std::vector<Room> initialize_cave(int);
+// The doubles are the percent chance that a room has a pit or bat,
+//  their sum must be  <= 100
+std::vector<Room> initialize_cave(int, double = 0.1, double = 0.1);
 
 // Print to console the status of pit, bat, wumpus, and links.
-void print_room(Room);
+void print_room(const Room&);
 
 // Count the number of rooms which have pit, bat, cave, and report
 //	the location of the wumpus.
-void print_stats(std::vector<Room>);
+void print_stats(const std::vector<Room>&);
 
 // Check if the Wumpus is in a room in the vector<int> argument.
-bool take_shot(std::vector<Room>, std::vector<int>);
+bool take_shot(const std::vector<Room>&, const std::vector<int>&);
 
 // Report if there is a bat, pit, or wumpus nearby the Room.
-void give_warning(Room, std::vector<Room>);
+void give_warning(const Room&, const std::vector<Room>&);
 
 // Shuffle the Wumpus between rooms
-void move_wumpus(std::vector<Room>);
+void move_wumpus(std::vector<Room>&);
 
 #endif 

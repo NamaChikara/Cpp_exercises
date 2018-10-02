@@ -7,25 +7,26 @@ Room::Room()
 Room::Room(bool p, bool b, bool w, int n, std::vector<int> lnk)
 	: pit(p), bat(b), wumpus(w), loc(n), links(lnk) {}
 
-std::vector<Room> initialize_cave(int rooms) {
+std::vector<Room> initialize_cave(int rooms, double pit_dist, double bat_dist) {
 	std::vector<Room> cave(rooms);
 
 	// set location and check if pit or bat should be true via a uniform distribution
-	//  the probabiity distribution is [0,pit_dist) U [pit_dist, 0.5) U [0.5, bat_dist) U [bat_dist,1]
+	//  the probabiity distribution is [0,pit_dist) U [pit_dist, pit_dist + bat_dist) U [pit_dist + bat_dist, 1]
 	//	to ensure only one of pit or bat is selected.
-	double pit_dist = 0.1;
-	double bat_dist = 0.6;
+
 	std::vector<double> probs = get_random(rooms);	// the random values for selecting pit or bat
 
 	for (int i = 0; i < rooms; ++i) {
 		cave[i].loc = i;
-		if (probs[i] < pit_dist)
-			cave[i].pit = true;
-		if (0.5 <= probs[i] && probs[i] < bat_dist)
-			cave[i].bat = true;
+		if (i != 0) {
+			if (probs[i] < pit_dist)
+				cave[i].pit = true;
+			if (pit_dist <= probs[i] && probs[i] < pit_dist + bat_dist)
+				cave[i].bat = true;
+		}
 	}
 
-	// pick a room for the wumpus (excluding the first room)
+	// pick a room for the wumpus (excluding room 0)
 	double wump = get_random();
 	int wump_room = get_bucket(rooms - 1, wump) + 1;
 	cave[wump_room].wumpus = true;
@@ -65,7 +66,7 @@ std::vector<Room> initialize_cave(int rooms) {
 	return cave;
 }
 
-void print_room(Room r) {
+void print_room(const Room& r) {
 	std::string pit = (r.pit) ? "true" : "false";
 	std::string bat = (r.bat) ? "true" : "false";
 	std::string wump = (r.wumpus) ? "true" : "false";
@@ -78,7 +79,7 @@ void print_room(Room r) {
 	std::cout << std::endl;
 }
 
-void print_stats(std::vector<Room> vr) {
+void print_stats(const std::vector<Room>& vr) {
 	int pit_count = 0;
 	int bat_count = 0;
 	int wumpus_location = 0;
@@ -116,7 +117,7 @@ void Room::print_info() {
 	std::cout << tunnels << "; move or shoot?" << std::endl;
 }
 
-bool take_shot(std::vector<Room> cave, std::vector<int> path) {
+bool take_shot(const std::vector<Room>& cave, const std::vector<int>& path) {
 	for (int i = 0; i < path.size(); ++i) {
 		if (cave[path[i]].wumpus == true) {
 			std::cout << "You hit the Wumpus in Room " << path[i] << "." << std::endl;
@@ -127,7 +128,7 @@ bool take_shot(std::vector<Room> cave, std::vector<int> path) {
 	return false;
 }
 
-void give_warning(Room location, std::vector<Room> cave) {
+void give_warning(const Room& location, const std::vector<Room>& cave) {
 	bool is_pit = false;
 	bool is_bat = false;
 	bool is_wumpus = false;
@@ -148,16 +149,15 @@ void give_warning(Room location, std::vector<Room> cave) {
 	return;
 }
 
-void move_wumpus(std::vector<Room> cave) {
+void move_wumpus(std::vector<Room>& cave) {
 	int wump_loc = -1;
 	for (int i = 0; i < cave.size(); ++i)
 		if (cave[i].wumpus == i)
 			wump_loc = i;
-	std::cout << "Wump loc " << wump_loc << std::endl;
 	int link_number = get_bucket(cave[wump_loc].links.size(), get_random());
-	std::cout << "link number " << link_number << std::endl;
 	int new_loc = cave[wump_loc].links[link_number];
-	std::cout << "new loc " << new_loc << std::endl;
 	cave[wump_loc].wumpus = false;
 	cave[new_loc].wumpus = true;
+	cave[new_loc].bat = false;	// Wumpus supercedes pre-existing dangers
+	cave[new_loc].pit = false;
 }
