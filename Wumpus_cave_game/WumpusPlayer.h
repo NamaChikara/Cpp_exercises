@@ -15,7 +15,7 @@ public:
 	int location;
 	int arrows;
 	std::vector<int> shot_path;
-	void get_move(std::vector<int>);
+	void get_move(const std::vector<int>&);
 };
 
 #endif

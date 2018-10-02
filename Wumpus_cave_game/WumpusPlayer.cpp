@@ -3,7 +3,7 @@
 Player::Player(std::string uname, int loc, int arr)
 	: name{ uname }, location{ loc }, arrows{ arr } {}
 
-void Player::get_move(std::vector<int> tunnels) {
+void Player::get_move(const std::vector<int>& tunnels) {
 	std::string action;
 	getline(std::cin, action);
 	std::stringstream ss{ action };
@@ -28,6 +28,10 @@ void Player::get_move(std::vector<int> tunnels) {
 		}
 	}
 	if (type == 's') {
+		if (arrows == 0) {
+			std::cout << "You are out of arrows." << std::endl;
+			return;
+		}
 		char dash;
 		int shot;
 		std::vector<int> path;
