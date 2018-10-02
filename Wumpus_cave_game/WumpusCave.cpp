@@ -116,7 +116,6 @@ void Room::print_info() {
 	std::cout << tunnels << "; move or shoot?" << std::endl;
 }
 
-
 bool take_shot(std::vector<Room> cave, std::vector<int> path) {
 	for (int i = 0; i < path.size(); ++i) {
 		if (cave[path[i]].wumpus == true) {
@@ -127,7 +126,6 @@ bool take_shot(std::vector<Room> cave, std::vector<int> path) {
 	std::cout << "You did not hit the Wumpus." << std::endl;
 	return false;
 }
-
 
 void give_warning(Room location, std::vector<Room> cave) {
 	bool is_pit = false;
@@ -148,4 +146,18 @@ void give_warning(Room location, std::vector<Room> cave) {
 	if (is_wumpus)
 		std::cout << "I smell a Wumpus." << std::endl;
 	return;
+}
+
+void move_wumpus(std::vector<Room> cave) {
+	int wump_loc = -1;
+	for (int i = 0; i < cave.size(); ++i)
+		if (cave[i].wumpus == i)
+			wump_loc = i;
+	std::cout << "Wump loc " << wump_loc << std::endl;
+	int link_number = get_bucket(cave[wump_loc].links.size(), get_random());
+	std::cout << "link number " << link_number << std::endl;
+	int new_loc = cave[wump_loc].links[link_number];
+	std::cout << "new loc " << new_loc << std::endl;
+	cave[wump_loc].wumpus = false;
+	cave[new_loc].wumpus = true;
 }

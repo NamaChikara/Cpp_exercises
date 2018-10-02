@@ -40,4 +40,7 @@ bool take_shot(std::vector<Room>, std::vector<int>);
 // Report if there is a bat, pit, or wumpus nearby the Room.
 void give_warning(Room, std::vector<Room>);
 
+// Shuffle the Wumpus between rooms
+void move_wumpus(std::vector<Room>);
+
 #endif 

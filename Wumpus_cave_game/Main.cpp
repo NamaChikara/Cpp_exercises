@@ -15,22 +15,36 @@
 #include <limits>
 #include "WumpusCave.h"
 #include "WumpusPlayer.h"
+#include "Probability.h"
 
 int main() {
 	std::vector<Room> cave = initialize_cave(5);
 	print_stats(cave);
-	bool wumpus = true;
+	bool playing = true;
 	Player user{ "Zack" };
 
-	while (wumpus) {
+	while (playing) {
 		cave[user.location].print_info();
+		give_warning(cave[user.location], cave);
 		user.get_move(cave[user.location].links);
 		if (user.shot_path.size() != 0) {
 			if (take_shot(cave, user.shot_path))
-				wumpus = false;
+				playing = false;
 			user.shot_path.clear();
+			move_wumpus(cave);
 		}
-		else
-			give_warning(cave[user.location], cave);
+		if (cave[user.location].bat) {
+			user.location = get_bucket(5, get_random());
+			std::cout << "A bat has dropped you in room " << user.location << "." << std::endl;
+		}
+		if (cave[user.location].wumpus == true) {
+			std::cout << "You moved to the same room as the Wumpus and died." << std::endl;
+			playing = false;
+		}
+		if (cave[user.location].pit) {
+			std::cout << "You moved to the same room as a pit and died." << std::endl;
+			playing = false;
+		}
 	}
+	std::cin.get();
 }
